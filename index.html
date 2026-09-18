@@ -154,7 +154,25 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Firebase Scripts (v10 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <script>
+    // Configuration Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsnQlbyHNTKfOSWFfuMZb_DFGjUvRHuKY",
+      authDomain: "carnet-de-voyage-21911.firebaseapp.com",
+      projectId: "carnet-de-voyage-21911",
+      storageBucket: "carnet-de-voyage-21911.firebasestorage.app",
+      messagingSenderId: "345006570680",
+      appId: "1:345006570680:web:4f1567c43aa9fcc076884d"
+    };
+
+    // Initialisation Firebase & Firestore
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     // Initialisation de la carte (Centrée sur l'Europe)
     const map = L.map('map').setView([46.603354, 1.888334], 5);
     
@@ -163,7 +181,7 @@
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    let places = JSON.parse(localStorage.getItem('my_travel_places') || '[]');
+    let places = [];
     let currentFilter = 'all';
     let markers = [];
 
@@ -211,13 +229,20 @@
       document.getElementById('modal').classList.remove('active');
     }
 
-    function savePlace(e) {
+    // Écoute en temps réel de la base de données Firestore
+    db.collection('places').onSnapshot(snapshot => {
+      places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      render();
+    }, error => {
+      console.error("Erreur de synchronisation Firestore : ", error);
+    });
+
+    async function savePlace(e) {
       e.preventDefault();
-      const id = document.getElementById('place-id').value || Date.now().toString();
+      const id = document.getElementById('place-id').value;
       const category = document.getElementById('category').value;
       
       const newPlace = {
-        id,
         category,
         name: document.getElementById('name').value,
         lat: parseFloat(document.getElementById('lat').value),
@@ -250,23 +275,27 @@
         };
       }
 
-      const existingIndex = places.findIndex(p => p.id === id);
-      if (existingIndex > -1) {
-        places[existingIndex] = newPlace;
-      } else {
-        places.push(newPlace);
+      try {
+        if (id) {
+          // Mise à jour d'un endroit existant
+          await db.collection('places').doc(id).set(newPlace, { merge: true });
+        } else {
+          // Création d'un nouvel endroit
+          await db.collection('places').add(newPlace);
+        }
+        closeModal();
+      } catch (err) {
+        alert("Erreur lors de l'enregistrement : " + err.message);
       }
-
-      localStorage.setItem('my_travel_places', JSON.stringify(places));
-      closeModal();
-      render();
     }
 
-    function deletePlace(id) {
+    async function deletePlace(id) {
       if (confirm('Voulez-vous vraiment supprimer cet endroit ?')) {
-        places = places.filter(p => p.id !== id);
-        localStorage.setItem('my_travel_places', JSON.stringify(places));
-        render();
+        try {
+          await db.collection('places').doc(id).delete();
+        } catch (err) {
+          alert("Erreur lors de la suppression : " + err.message);
+        }
       }
     }
 
@@ -305,11 +334,11 @@
 
         let detailsHTML = '';
         if (p.category === 'logement') {
-          if (p.details.contact) detailsHTML += `<div>👤 Contact: ${p.details.contact} (${p.details.phone || 'N/A'})</div>`;
-          if (p.details.history) detailsHTML += `<div>📅 ${p.details.history}</div>`;
+          if (p.details?.contact) detailsHTML += `<div>👤 Contact: ${p.details.contact} (${p.details.phone || 'N/A'})</div>`;
+          if (p.details?.history) detailsHTML += `<div>📅 ${p.details.history}</div>`;
         } else if (p.category === 'restaurant') {
-          if (p.details.dishes) detailsHTML += `<div>🍲 Plats: ${p.details.dishes}</div>`;
-          if (p.details.price) detailsHTML += `<div>💰 Prix: ${p.details.price}</div>`;
+          if (p.details?.dishes) detailsHTML += `<div>🍲 Plats: ${p.details.dishes}</div>`;
+          if (p.details?.price) detailsHTML += `<div>💰 Prix: ${p.details.price}</div>`;
         }
 
         card.innerHTML = `
