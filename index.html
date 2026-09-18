@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Carnet de Voyage & Souvenirs</title>
+  
+  <!-- Leaflet CSS (Carte) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; background: #f4f6f9; }
+    
+    header { background: #1e293b; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; }
+    header h1 { font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    
+    .btn-add { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn-add:hover { background: #059669; }
+
+    #container { display: flex; flex: 1; position: relative; overflow: hidden; }
+    #map { flex: 1; height: 100%; z-index: 1; }
+    
+    /* Panel latéral */
+    #sidebar { width: 380px; background: white; border-left: 1px solid #e2e8f0; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 2; box-shadow: -2px 0 10px rgba(0,0,0,0.05); }
+    
+    .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+    .filter-chip { padding: 6px 12px; border-radius: 20px; background: #e2e8f0; border: none; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+    .filter-chip.active { background: #2563eb; color: white; }
+
+    .place-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; display: flex; flex-direction: column; gap: 6px; }
+    .place-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-weight: 600; font-size: 1rem; color: #0f172a; }
+    .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; color: white; font-weight: 600; text-transform: capitalize; }
+
+    /* Badges Couleurs */
+    .bg-logement { background-color: #8b5cf6; }
+    .bg-restaurant { background-color: #f59e0b; }
+    .bg-sortie { background-color: #ec4899; }
+    .bg-etape { background-color: #10b981; }
+
+    /* Modal Formulaire */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
+
+    form { display: flex; flex-direction: column; gap: 12px; }
+    label { font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 2px; }
+    input, select, textarea { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; }
+    textarea { resize: vertical; min-height: 70px; }
+    .dynamic-fields { border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 5px; }
+
+    .btn-submit { background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-submit:hover { background: #1d4ed8; }
+
+    @media (max-width: 768px) {
+      #container { flex-direction: column; }
+      #sidebar { width: 100%; height: 40%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🗺️ Carnet de Voyage & Souvenirs</h1>
+    <button class="btn-add" onclick="openModal()">+ Ajouter un endroit</button>
+  </header>
+
+  <div id="container">
+    <div id="map"></div>
+    <div id="sidebar">
+      <div class="filters">
+        <button class="filter-chip active" onclick="filterPlaces('all')">Tous</button>
+        <button class="filter-chip" onclick="filterPlaces('logement')">🏠 Logements</button>
+        <button class="filter-chip" onclick="filterPlaces('restaurant')">🍽️ Restos</button>
+        <button class="filter-chip" onclick="filterPlaces('sortie')">🎯 Sorties/Visites</button>
+        <button class="filter-chip" onclick="filterPlaces('etape')">🚴 Étapes/Spots</button>
+      </div>
+      <div id="places-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal Formulaire -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Ajouter un nouveau lieu</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="place-form" onsubmit="savePlace(event)">
+        <input type="hidden" id="place-id">
+        
+        <div>
+          <label>Catégorie *</label>
+          <select id="category" required onchange="renderDynamicFields()">
+            <option value="logement">🏠 Logement de vacances</option>
+            <option value="restaurant">🍽️ Restaurant</option>
+            <option value="sortie">🎯 Sortie / Visite</option>
+            <option value="etape">🚴 Étape / Spot (Vélo, Auto)</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Nom du lieu *</label>
+          <input type="text" id="name" required placeholder="Ex: Gîte du Mont-Blanc, Resto Le Petit Chef">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label>Latitude *</label>
+            <input type="number" step="any" id="lat" required placeholder="Ex: 48.8566">
+          </div>
+          <div style="flex: 1;">
+            <label>Longitude *</label>
+            <input type="number" step="any" id="lng" required placeholder="Ex: 2.3522">
+          </div>
+        </div>
+
+        <div>
+          <label>Adresse complète / Ville</label>
+          <input type="text" id="address" placeholder="Ex: 12 rue des Fleurs, Strasbourg">
+        </div>
+
+        <div>
+          <label>Lien Google Maps / Internet</label>
+          <input type="url" id="link" placeholder="https://maps.google.com/...">
+        </div>
+
+        <div>
+          <label>URL d'une Photo</label>
+          <input type="url" id="photo" placeholder="https://domaine.com/photo.jpg">
+        </div>
+
+        <div>
+          <label>Commentaires / Notes générales</label>
+          <textarea id="comments" placeholder="Avis, trucs à savoir pour la prochaine fois..."></textarea>
+        </div>
+
+        <!-- Champs Dynamiques selon Catégorie -->
+        <div id="dynamic-fields" class="dynamic-fields"></div>
+
+        <button type="submit" class="btn-submit">Enregistrer la fiche</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // Initialisation de la carte (Centrée sur l'Europe)
+    const map = L.map('map').setView([46.603354, 1.888334], 5);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let places = JSON.parse(localStorage.getItem('my_travel_places') || '[]');
+    let currentFilter = 'all';
+    let markers = [];
+
+    // Clic sur la carte pour pré-remplir les coordonnées GPS
+    map.on('click', function(e) {
+      openModal();
+      document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('lng').value = e.latlng.lng.toFixed(6);
+    });
+
+    function renderDynamicFields() {
+      const cat = document.getElementById('category').value;
+      const container = document.getElementById('dynamic-fields');
+      container.innerHTML = '';
+
+      if (cat === 'logement') {
+        container.innerHTML = `
+          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Jean Dupont"></div>
+          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 06 12 34 56 78"></div>
+          <div><label>Nombre de pièces / Équipements</label><input type="text" id="field_equipments" placeholder="Ex: 3 pièces, Piscine, Garage vélo"></div>
+          <div><label>Dates de venue & Prix payé</label><input type="text" id="field_history" placeholder="Ex: Juillet 2024 - 450€ / semaine"></div>
+        `;
+      } else if (cat === 'restaurant') {
+        container.innerHTML = `
+          <div><label>Type de cuisine / Plats goutés</label><input type="text" id="field_dishes" placeholder="Ex: Alsacien, Tartes flambées"></div>
+          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Excellent, service rapide"></div>
+          <div><label>Prix moyen payé</label><input type="text" id="field_price" placeholder="Ex: 35€ par personne"></div>
+        `;
+      } else if (cat === 'sortie' || cat === 'etape') {
+        container.innerHTML = `
+          <div><label>Avis / Conseils pour la prochaine fois</label><input type="text" id="field_tips" placeholder="Ex: Prévoir du liquide, venir le matin"></div>
+          <div><label>Prix / Tarifs d'accès</label><input type="text" id="field_price" placeholder="Ex: Gratuit, ou 12€/pers"></div>
+        `;
+      }
+    }
+
+    function openModal() {
+      document.getElementById('place-form').reset();
+      document.getElementById('place-id').value = '';
+      renderDynamicFields();
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    function savePlace(e) {
+      e.preventDefault();
+      const id = document.getElementById('place-id').value || Date.now().toString();
+      const category = document.getElementById('category').value;
+      
+      const newPlace = {
+        id,
+        category,
+        name: document.getElementById('name').value,
+        lat: parseFloat(document.getElementById('lat').value),
+        lng: parseFloat(document.getElementById('lng').value),
+        address: document.getElementById('address').value,
+        link: document.getElementById('link').value,
+        photo: document.getElementById('photo').value,
+        comments: document.getElementById('comments').value,
+        details: {}
+      };
+
+      // Extraire champs spécifiques
+      if (category === 'logement') {
+        newPlace.details = {
+          contact: document.getElementById('field_contact')?.value || '',
+          phone: document.getElementById('field_phone')?.value || '',
+          equipments: document.getElementById('field_equipments')?.value || '',
+          history: document.getElementById('field_history')?.value || ''
+        };
+      } else if (category === 'restaurant') {
+        newPlace.details = {
+          dishes: document.getElementById('field_dishes')?.value || '',
+          quality: document.getElementById('field_quality')?.value || '',
+          price: document.getElementById('field_price')?.value || ''
+        };
+      } else {
+        newPlace.details = {
+          tips: document.getElementById('field_tips')?.value || '',
+          price: document.getElementById('field_price')?.value || ''
+        };
+      }
+
+      const existingIndex = places.findIndex(p => p.id === id);
+      if (existingIndex > -1) {
+        places[existingIndex] = newPlace;
+      } else {
+        places.push(newPlace);
+      }
+
+      localStorage.setItem('my_travel_places', JSON.stringify(places));
+      closeModal();
+      render();
+    }
+
+    function deletePlace(id) {
+      if (confirm('Voulez-vous vraiment supprimer cet endroit ?')) {
+        places = places.filter(p => p.id !== id);
+        localStorage.setItem('my_travel_places', JSON.stringify(places));
+        render();
+      }
+    }
+
+    function filterPlaces(cat) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      render();
+    }
+
+    function render() {
+      // Effacer marqueurs
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      const listContainer = document.getElementById('places-list');
+      listContainer.innerHTML = '';
+
+      const filtered = currentFilter === 'all' ? places : places.filter(p => p.category === currentFilter);
+
+      filtered.forEach(p => {
+        // Ajouter marqueur carte
+        const marker = L.marker([p.lat, p.lng]).addTo(map);
+        
+        let popupContent = `<strong>${p.name}</strong><br>${p.address || ''}<br>`;
+        if (p.link) popupContent += `<a href="${p.link}" target="_blank">Ouvrir le lien</a><br>`;
+        popupContent += `<p style="font-size:0.8rem; margin-top:5px;">${p.comments || ''}</p>`;
+
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+
+        // Carte liste latérale
+        const card = document.createElement('div');
+        card.className = 'place-card';
+        card.onclick = () => map.setView([p.lat, p.lng], 14);
+
+        let detailsHTML = '';
+        if (p.category === 'logement') {
+          if (p.details.contact) detailsHTML += `<div>👤 Contact: ${p.details.contact} (${p.details.phone || 'N/A'})</div>`;
+          if (p.details.history) detailsHTML += `<div>📅 ${p.details.history}</div>`;
+        } else if (p.category === 'restaurant') {
+          if (p.details.dishes) detailsHTML += `<div>🍲 Plats: ${p.details.dishes}</div>`;
+          if (p.details.price) detailsHTML += `<div>💰 Prix: ${p.details.price}</div>`;
+        }
+
+        card.innerHTML = `
+          <div class="card-header">
+            <span class="card-title">${p.name}</span>
+            <span class="badge bg-${p.category}">${p.category}</span>
+          </div>
+          ${p.address ? `<div style="font-size:0.8rem; color:#64748b;">📍 ${p.address}</div>` : ''}
+          ${p.comments ? `<div style="font-size:0.85rem; color:#334155;">${p.comments}</div>` : ''}
+          ${detailsHTML ? `<div style="font-size:0.8rem; color:#475569; background:#f8fafc; padding:6px; border-radius:4px;">${detailsHTML}</div>` : ''}
+          <div style="display:flex; justify-content:space-between; margin-top:5px;">
+            ${p.link ? `<a href="${p.link}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.8rem; color:#2563eb;">Voir le lien</a>` : '<span></span>'}
+            <button onclick="event.stopPropagation(); deletePlace('${p.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.8rem;">Supprimer</button>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
