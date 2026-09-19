@@ -124,7 +124,7 @@
 
   <!-- Barre de recherche dépliable -->
   <div id="search-bar-container">
-    <input type="text" id="search-input" placeholder="Rechercher (nom, ville, mot-clé, accompagnants, etc.)..." oninput="render()">
+    <input type="search" id="search-input" placeholder="Rechercher (nom, ville, mot-clé, accompagnants, etc.)..." oninput="render()">
   </div>
 
   <div id="container">
@@ -271,6 +271,13 @@
     let userMarker = null;
     let currentUserCoords = null;
 
+    // Fermeture du clavier virtuel sur la touche Entrée du champ de recherche
+    document.getElementById('search-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        this.blur();
+      }
+    });
+
     // Retour Accueil
     function goHome() {
       closeModal();
@@ -415,6 +422,7 @@
     }
 
     function closeModal() {
+      if (document.activeElement) document.activeElement.blur();
       document.getElementById('modal').classList.remove('active');
       document.getElementById('view-modal').classList.remove('active');
     }
@@ -452,6 +460,10 @@
 
     async function savePlace(e) {
       e.preventDefault();
+      
+      // Ferme le clavier sur l'enregistrement
+      if (document.activeElement) document.activeElement.blur();
+
       const id = document.getElementById('place-id').value;
       const category = document.getElementById('category').value;
       const name = document.getElementById('name').value;
