@@ -17,7 +17,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; background: #f4f6f9; }
     
-    /* Header toujours fixe en haut */
+    /* Header fixe en haut */
     header { position: sticky; top: 0; background: #1e293b; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; gap: 10px; flex-wrap: wrap; }
     header h1 { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     
@@ -43,9 +43,9 @@
     /* Panel latéral */
     #sidebar { width: 380px; background: white; border-left: 1px solid #e2e8f0; overflow-y: auto; padding: 0; display: flex; flex-direction: column; z-index: 2; box-shadow: -2px 0 10px rgba(0,0,0,0.05); }
     
-    /* Barre de filtres toujours fixe en haut du panneau */
-    .filters { position: sticky; top: 0; background: white; z-index: 10; padding: 12px 15px; display: flex; gap: 6px; overflow-x: auto; border-bottom: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .filter-chip { padding: 6px 12px; border-radius: 20px; background: #e2e8f0; border: none; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-weight: 500; }
+    /* Barre de filtres agrandie en hauteur */
+    .filters { position: sticky; top: 0; background: white; z-index: 10; padding: 14px 15px; display: flex; align-items: center; gap: 8px; overflow-x: auto; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04); min-height: 56px; }
+    .filter-chip { padding: 8px 16px; border-radius: 20px; background: #e2e8f0; border: none; font-size: 0.9rem; cursor: pointer; white-space: nowrap; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 4px; }
     .filter-chip.active { background: #2563eb; color: white; }
 
     /* Liste des fiches */
@@ -85,7 +85,7 @@
     .btn-submit { background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-submit:hover { background: #1d4ed8; }
 
-    /* Style de la Fiche du Lieu */
+    /* Style Fiche Lieu */
     .view-card-layout { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
     .photo-container { width: 110px; height: 110px; min-width: 110px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; position: relative; text-align: center; overflow: hidden; }
     .photo-container img { width: 100%; height: 100%; object-fit: cover; }
@@ -109,12 +109,12 @@
     .btn-edit { background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
     .btn-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
 
-    /* Configuration Mobile Optimisée */
+    /* Adaptation Mobile Optimisée */
     @media (max-width: 768px) {
       #container { flex-direction: column; }
-      #map { height: 35vh; flex: none; } /* Carte réduite à 35% de la hauteur */
+      #map { height: 30vh; flex: none; } /* Hauteur de carte ajustée à 30vh pour dégager la barre d'onglets */
       #sidebar { width: 100%; flex: 1; }
-      .btn-locate { top: 65px; }
+      .btn-locate { top: 60px; }
     }
   </style>
 </head>
@@ -129,7 +129,7 @@
     </div>
   </header>
 
-  <!-- Barre de recherche dépliable -->
+  <!-- Barre de recherche -->
   <div id="search-bar-container">
     <input type="search" id="search-input" placeholder="Rechercher (nom, ville, mot-clé, accompagnants, etc.)..." oninput="render()">
   </div>
@@ -179,7 +179,6 @@
           <input type="text" id="name" required placeholder="Ex: Séjour à la Mer, Hôtel du Centre...">
         </div>
 
-        <!-- Champs Généraux : Dates & Avec qui -->
         <div class="form-row">
           <div>
             <label>Du (Date de début)</label>
@@ -227,7 +226,6 @@
           <textarea id="comments" placeholder="Avis, trucs à savoir..."></textarea>
         </div>
 
-        <!-- Champs Dynamiques selon Catégorie -->
         <div id="dynamic-fields" class="dynamic-fields"></div>
 
         <button type="submit" class="btn-submit" id="btn-save">Enregistrer la fiche</button>
@@ -237,20 +235,17 @@
 
   <!-- Modal Fiche Détaillée -->
   <div class="modal" id="view-modal">
-    <div class="modal-content" id="view-modal-content">
-      <!-- Rempli dynamiquement en JS -->
-    </div>
+    <div class="modal-content" id="view-modal-content"></div>
   </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Firebase Scripts (v10 Compat) -->
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Configuration Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDsnQlbyHNTKfOSWFfuMZb_DFGjUvRHuKY",
       authDomain: "carnet-de-voyage-21911.firebaseapp.com",
@@ -260,11 +255,9 @@
       appId: "1:345006570680:web:4f1567c43aa9fcc076884d"
     };
 
-    // Initialisation Firebase & Firestore
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Initialisation de la carte (Centrée sur la France)
     const map = L.map('map').setView([46.603354, 1.888334], 6);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -278,14 +271,10 @@
     let userMarker = null;
     let currentUserCoords = null;
 
-    // Fermeture du clavier virtuel sur la touche Entrée du champ de recherche
     document.getElementById('search-input').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        this.blur();
-      }
+      if (e.key === 'Enter') this.blur();
     });
 
-    // Retour Accueil
     function goHome() {
       closeModal();
       document.getElementById('search-bar-container').classList.remove('active');
@@ -305,7 +294,6 @@
       }
     }
 
-    // Localisation automatique
     function centerOnUserLocation() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -337,7 +325,6 @@
 
     centerOnUserLocation();
 
-    // Clic sur la carte : Géocodage inverse
     map.on('click', async function(e) {
       const { lat, lng } = e.latlng;
       openModal();
@@ -369,9 +356,9 @@
 
       if (cat === 'sejour') {
         container.innerHTML = `
-          <div><label>Plateforme de réservation</label><input type="text" id="field_booking_platform" placeholder="Ex: Airbnb, Booking, Agence XYZ..."></div>
-          <div><label>Motif du séjour</label><input type="text" id="field_reason" placeholder="Ex: Vacances d'été, Mariage, Anniversaire, Travail..."></div>
-          <div><label>Compagnie aérienne (si vol)</label><input type="text" id="field_airline" placeholder="Ex: Air France, EasyJet, Ryanair..."></div>
+          <div><label>Plateforme de réservation</label><input type="text" id="field_booking_platform" placeholder="Ex: Airbnb, Booking..."></div>
+          <div><label>Motif du séjour</label><input type="text" id="field_reason" placeholder="Ex: Vacances, Anniversaire..."></div>
+          <div><label>Compagnie aérienne (si vol)</label><input type="text" id="field_airline" placeholder="Ex: Air France..."></div>
           
           <div class="price-type-box">
             <label>Mode de facturation / Tarification</label>
@@ -399,16 +386,16 @@
       } else if (cat === 'hotel' || cat === 'location') {
         container.innerHTML = `
           <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 06 12 34 56 78"></div>
-          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Réception / Jean Dupont"></div>
-          <div><label>Équipements / Détails</label><input type="text" id="field_equipments" placeholder="Ex: Petit-déjeuner inclus, Piscine"></div>
+          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Réception"></div>
+          <div><label>Équipements / Détails</label><input type="text" id="field_equipments" placeholder="Ex: Piscine, Wifi"></div>
           <div><label>Prix payé (€)</label><input type="text" id="field_price" placeholder="Ex: 120€ / nuit"></div>
         `;
       } else if (cat === 'restaurant' || cat === 'weinstube') {
         container.innerHTML = `
           <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56"></div>
-          <div><label>Type de cuisine / Spécialités</label><input type="text" id="field_dishes" placeholder="Ex: Flammekueche, Vins locaux"></div>
-          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Chaleureux, typique"></div>
-          <div><label>Prix moyen payé (€)</label><input type="text" id="field_price" placeholder="Ex: 35€ / personne"></div>
+          <div><label>Type de cuisine / Spécialités</label><input type="text" id="field_dishes" placeholder="Ex: Flammekueche"></div>
+          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Chaleureux"></div>
+          <div><label>Prix moyen payé (€)</label><input type="text" id="field_price" placeholder="Ex: 35€ / pers"></div>
         `;
       } else if (cat === 'sortie') {
         container.innerHTML = `
@@ -434,7 +421,6 @@
       document.getElementById('view-modal').classList.remove('active');
     }
 
-    // Géocodage d'adresse
     async function geocodeAndValidateAddress(name, street, postcode, city, country) {
       const query = `${street} ${postcode} ${city} ${country}`.trim();
       const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}`;
@@ -457,7 +443,6 @@
       return null;
     }
 
-    // Écoute Firestore
     db.collection('places').onSnapshot(snapshot => {
       places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       render();
@@ -467,8 +452,6 @@
 
     async function savePlace(e) {
       e.preventDefault();
-      
-      // Ferme le clavier sur l'enregistrement
       if (document.activeElement) document.activeElement.blur();
 
       const id = document.getElementById('place-id').value;
@@ -559,7 +542,6 @@
       }
     }
 
-    // Affichage fiche détaillée
     function viewPlace(id) {
       const p = places.find(item => item.id === id);
       if (!p) return;
@@ -760,7 +742,6 @@
       render();
     }
 
-    // Moteur de recherche complet
     function render() {
       markers.forEach(m => map.removeLayer(m));
       markers = [];
@@ -772,11 +753,8 @@
 
       const filtered = places.filter(p => {
         const matchesCategory = currentFilter === 'all' || p.category === currentFilter;
-
-        // Préparation d'une super chaîne de texte pour la recherche
         const detailsString = p.details ? Object.values(p.details).join(' ') : '';
         const searchableContent = `${p.name || ''} ${p.city || ''} ${p.address || ''} ${p.comments || ''} ${p.with_who || ''} ${p.category || ''} ${detailsString}`.toLowerCase();
-
         const matchesSearch = !searchQuery || searchQuery.split(' ').every(q => searchableContent.includes(q));
 
         return matchesCategory && matchesSearch;
