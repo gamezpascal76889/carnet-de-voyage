@@ -17,11 +17,20 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; background: #f4f6f9; }
     
-    header { background: #1e293b; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; }
-    header h1 { font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    /* Header toujours fixe en haut */
+    header { position: sticky; top: 0; background: #1e293b; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; gap: 10px; flex-wrap: wrap; }
+    header h1 { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     
-    .btn-add { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .btn-header { background: #334155; color: white; border: 1px solid #475569; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; }
+    .btn-header:hover { background: #475569; }
+    .btn-add { background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.85rem; }
     .btn-add:hover { background: #059669; }
+
+    /* Barre de recherche rapide dans le header */
+    #search-bar-container { display: none; width: 100%; background: #0f172a; padding: 8px 15px; }
+    #search-bar-container.active { display: block; }
+    #search-input { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white; font-size: 0.9rem; }
 
     #container { display: flex; flex: 1; position: relative; overflow: hidden; }
     #map { flex: 1; height: 100%; z-index: 1; }
@@ -44,10 +53,11 @@
     .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; color: white; font-weight: 600; text-transform: capitalize; }
 
     /* Badges Couleurs */
-    .bg-logement { background-color: #8b5cf6; }
+    .bg-hotel { background-color: #8b5cf6; }
+    .bg-location { background-color: #a855f7; }
     .bg-restaurant { background-color: #f59e0b; }
+    .bg-weinstube { background-color: #d97706; }
     .bg-sortie { background-color: #ec4899; }
-    .bg-etape { background-color: #10b981; }
 
     /* Modal Formulaire & Fiche */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
@@ -67,19 +77,21 @@
 
     /* Style de la Fiche du Lieu */
     .view-card-layout { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
-    .photo-container { width: 110px; height: 110px; min-width: 110px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; overflow: hidden; position: relative; text-align: center; padding: 5px; }
+    .photo-container { width: 110px; height: 110px; min-width: 110px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; position: relative; text-align: center; overflow: hidden; }
     .photo-container img { width: 100%; height: 100%; object-fit: cover; }
-    .photo-container span { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+    .photo-btn-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; font-size: 0.65rem; padding: 3px 0; cursor: pointer; }
     
     .view-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
     .view-info h2 { font-size: 1.25rem; color: #0f172a; margin-bottom: 2px; }
     .view-info p { font-size: 0.85rem; color: #475569; }
 
+    .category-header-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .btn-see-map { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+
     .action-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
     .btn-link { text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 8px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
     .btn-web { background: #e0e7ff; color: #3730a3; }
-    .btn-google { background: #fef3c7; color: #92400e; }
-    .btn-ai { background: linear-gradient(135deg, #a855f7, #6366f1); color: white; box-shadow: 0 2px 4px rgba(168, 85, 247, 0.3); }
+    .btn-route { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
 
     .comments-box { background: #f8fafc; border-left: 3px solid #2563eb; padding: 10px; border-radius: 4px; font-size: 0.85rem; color: #334155; margin-bottom: 15px; }
 
@@ -97,8 +109,17 @@
 
   <header>
     <h1>🗺️ Notre carnet de voyage & souvenirs</h1>
-    <button class="btn-add" onclick="openModal()">+ Ajouter un endroit</button>
+    <div class="header-actions">
+      <button class="btn-header" onclick="toggleSearchBar()" title="Rechercher">🔍</button>
+      <button class="btn-header" onclick="goBack()" title="Retour">↩️</button>
+      <button class="btn-add" onclick="openModal()">+ Ajouter un endroit</button>
+    </div>
   </header>
+
+  <!-- Barre de recherche dépliable -->
+  <div id="search-bar-container">
+    <input type="text" id="search-input" placeholder="Trouver un endroit (nom, ville, mot-clé)..." oninput="render()">
+  </div>
 
   <div id="container">
     <div id="map"></div>
@@ -106,10 +127,11 @@
     <div id="sidebar">
       <div class="filters">
         <button class="filter-chip active" onclick="filterPlaces('all')">Tous</button>
-        <button class="filter-chip" onclick="filterPlaces('logement')">🏠 Logements</button>
+        <button class="filter-chip" onclick="filterPlaces('hotel')">🏨 Hôtels</button>
+        <button class="filter-chip" onclick="filterPlaces('location')">🏡 Locations vacances</button>
         <button class="filter-chip" onclick="filterPlaces('restaurant')">🍽️ Restos</button>
+        <button class="filter-chip" onclick="filterPlaces('weinstube')">🍷 Weinstube</button>
         <button class="filter-chip" onclick="filterPlaces('sortie')">🎯 Sorties/Visites</button>
-        <button class="filter-chip" onclick="filterPlaces('etape')">🚴 Étapes/Spots</button>
       </div>
       <div id="places-list"></div>
     </div>
@@ -129,16 +151,17 @@
         <div>
           <label>Catégorie *</label>
           <select id="category" required onchange="renderDynamicFields()">
-            <option value="logement">🏠 Logement de vacances</option>
-            <option value="restaurant">🍽️ Restaurant</option>
+            <option value="hotel">🏨 Logement - Hôtel</option>
+            <option value="location">🏡 Logement - Location vacances</option>
+            <option value="restaurant">🍽️ Restaurant - Classique</option>
+            <option value="weinstube">🍷 Restaurant - Weinstube</option>
             <option value="sortie">🎯 Sortie / Visite</option>
-            <option value="etape">🚴 Étape / Spot (Vélo, Auto)</option>
           </select>
         </div>
 
         <div>
           <label>Nom de l'établissement / lieu *</label>
-          <input type="text" id="name" required placeholder="Ex: Gîte du Mont-Blanc, Le Petit Chef">
+          <input type="text" id="name" required placeholder="Ex: Hôtel du Centre, Le Petit Chef, Weinstube Zum Pfälzer">
         </div>
 
         <div>
@@ -148,8 +171,8 @@
 
         <div style="display: flex; gap: 10px;">
           <div style="flex: 1;">
-            <label>Code Postal</label>
-            <input type="text" id="postcode" placeholder="Ex: 67000">
+            <label>Code Postal *</label>
+            <input type="text" id="postcode" required placeholder="Ex: 67000">
           </div>
           <div style="flex: 1;">
             <label>Ville *</label>
@@ -221,6 +244,29 @@
     let currentFilter = 'all';
     let markers = [];
     let userMarker = null;
+    let currentUserCoords = null;
+
+    // Bouton Retour universel
+    function goBack() {
+      if (document.getElementById('modal').classList.contains('active') || document.getElementById('view-modal').classList.contains('active')) {
+        closeModal();
+      } else if (document.getElementById('search-bar-container').classList.contains('active')) {
+        toggleSearchBar();
+      } else {
+        map.setView([46.603354, 1.888334], 6);
+      }
+    }
+
+    function toggleSearchBar() {
+      const container = document.getElementById('search-bar-container');
+      container.classList.toggle('active');
+      if (!container.classList.contains('active')) {
+        document.getElementById('search-input').value = '';
+        render();
+      } else {
+        document.getElementById('search-input').focus();
+      }
+    }
 
     // Localisation automatique de l'utilisateur au lancement
     function centerOnUserLocation() {
@@ -229,11 +275,10 @@
           (position) => {
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
+            currentUserCoords = { lat: userLat, lng: userLng };
 
-            // Centrer la carte sur la position de l'utilisateur
             map.setView([userLat, userLng], 13);
 
-            // Mettre à jour ou ajouter le marqueur de l'utilisateur
             if (userMarker) {
               userMarker.setLatLng([userLat, userLng]);
             } else {
@@ -248,17 +293,16 @@
             }
           },
           (error) => {
-            console.warn("Impossible de récupérer la géolocalisation :", error.message);
+            console.warn("Géolocalisation non disponible :", error.message);
           },
           { enableHighAccuracy: true }
         );
       }
     }
 
-    // Activer la géolocalisation automatique dès le chargement
     centerOnUserLocation();
 
-    // Clic sur la carte : Géocodage inverse pour pré-remplir l'adresse
+    // Clic sur la carte : Géocodage inverse
     map.on('click', async function(e) {
       const { lat, lng } = e.latlng;
       openModal();
@@ -272,7 +316,7 @@
           document.getElementById('country').value = data.address.country || 'France';
         }
       } catch(err) {
-        console.log("Erreur de géocodage inverse", err);
+        console.log("Erreur géocodage inverse", err);
       }
     });
 
@@ -281,22 +325,22 @@
       const container = document.getElementById('dynamic-fields');
       container.innerHTML = '';
 
-      if (cat === 'logement') {
+      if (cat === 'hotel' || cat === 'location') {
         container.innerHTML = `
-          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Jean Dupont"></div>
+          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Réception / Jean Dupont"></div>
           <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 06 12 34 56 78"></div>
-          <div><label>Équipements / Détails</label><input type="text" id="field_equipments" placeholder="Ex: Piscine, Garage vélo"></div>
-          <div><label>Dates & Prix</label><input type="text" id="field_history" placeholder="Ex: Juillet 2025 - 450€ / sem"></div>
+          <div><label>Équipements / Détails</label><input type="text" id="field_equipments" placeholder="Ex: Petit-déjeuner inclus, Piscine, Garage vélo"></div>
+          <div><label>Dates & Prix</label><input type="text" id="field_history" placeholder="Ex: Juillet 2025 - 120€ / nuit"></div>
         `;
-      } else if (cat === 'restaurant') {
+      } else if (cat === 'restaurant' || cat === 'weinstube') {
         container.innerHTML = `
-          <div><label>Type de cuisine / Plats goutés</label><input type="text" id="field_dishes" placeholder="Ex: Alsacien, Tartes flambées"></div>
-          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Excellent, service rapide"></div>
-          <div><label>Prix moyen payé</label><input type="text" id="field_price" placeholder="Ex: 35€ par personne"></div>
+          <div><label>Type de cuisine / Spécialités</label><input type="text" id="field_dishes" placeholder="Ex: Plats alsaciens, Vins locaux, Flammekueche"></div>
+          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Chaleureux, typique, service rapide"></div>
+          <div><label>Prix moyen payé</label><input type="text" id="field_price" placeholder="Ex: 30€ par personne"></div>
         `;
-      } else if (cat === 'sortie' || cat === 'etape') {
+      } else if (cat === 'sortie') {
         container.innerHTML = `
-          <div><label>Conseils pour la prochaine fois</label><input type="text" id="field_tips" placeholder="Ex: Prévoir du liquide, venir le matin"></div>
+          <div><label>Conseils pour la prochaine fois</label><input type="text" id="field_tips" placeholder="Ex: Prévoir du liquide, réserver à l'avance"></div>
           <div><label>Prix / Tarifs d'accès</label><input type="text" id="field_price" placeholder="Ex: Gratuit, ou 12€/pers"></div>
         `;
       }
@@ -316,28 +360,31 @@
       document.getElementById('view-modal').classList.remove('active');
     }
 
-    // Convertisseur d'adresse en Lat/Lng via Nominatim
-    async function geocodeAddress(name, street, postcode, city, country) {
-      const query = `${name} ${street} ${postcode} ${city} ${country}`.trim();
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    // Convertisseur d'adresse & vérification stricte Code Postal / Ville
+    async function geocodeAndValidateAddress(name, street, postcode, city, country) {
+      const query = `${street} ${postcode} ${city} ${country}`.trim();
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}`;
       
       try {
         let response = await fetch(url);
         let data = await response.json();
 
-        if ((!data || data.length === 0) && street) {
-          const fallbackQuery = `${street} ${postcode} ${city} ${country}`.trim();
-          response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallbackQuery)}`);
-          data = await response.json();
-        }
-
         if (!data || data.length === 0) {
-          const cityQuery = `${city} ${country}`.trim();
-          response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityQuery)}`);
+          // Deuxième tentative avec juste ville et CP
+          response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(postcode + ' ' + city + ' ' + country)}`);
           data = await response.json();
         }
 
         if (data && data.length > 0) {
+          const addr = data[0].address;
+          const returnedPostcode = addr.postcode || '';
+          
+          // Vérification si le code postal correspond
+          if (postcode && returnedPostcode && !returnedPostcode.startsWith(postcode.substring(0, 3))) {
+            const confirmChoice = confirm(`⚠️ Attention : Le code postal "${postcode}" ne semble pas correspondre à la ville de "${city}" (détecté : ${returnedPostcode}).\n\nVoulez-vous quand même enregistrer ?`);
+            if (!confirmChoice) return null;
+          }
+
           return {
             lat: parseFloat(data[0].lat),
             lng: parseFloat(data[0].lon)
@@ -349,7 +396,7 @@
       return null;
     }
 
-    // Écoute en temps réel Firestore
+    // Écoute Firestore
     db.collection('places').onSnapshot(snapshot => {
       places = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       render();
@@ -369,12 +416,11 @@
 
       const btnSave = document.getElementById('btn-save');
       btnSave.disabled = true;
-      btnSave.innerText = "Géocodage & Enregistrement en cours...";
+      btnSave.innerText = "Vérification de l'adresse & Enregistrement...";
 
-      const coords = await geocodeAddress(name, street, postcode, city, country);
+      const coords = await geocodeAndValidateAddress(name, street, postcode, city, country);
 
       if (!coords) {
-        alert("Impossible de localiser cette adresse postale. Vérifiez l'adresse ou la ville.");
         btnSave.disabled = false;
         btnSave.innerText = "Enregistrer la fiche";
         return;
@@ -396,14 +442,14 @@
         details: {}
       };
 
-      if (category === 'logement') {
+      if (category === 'hotel' || category === 'location') {
         newPlace.details = {
           contact: document.getElementById('field_contact')?.value || '',
           phone: document.getElementById('field_phone')?.value || '',
           equipments: document.getElementById('field_equipments')?.value || '',
           history: document.getElementById('field_history')?.value || ''
         };
-      } else if (category === 'restaurant') {
+      } else if (category === 'restaurant' || category === 'weinstube') {
         newPlace.details = {
           dishes: document.getElementById('field_dishes')?.value || '',
           quality: document.getElementById('field_quality')?.value || '',
@@ -432,22 +478,34 @@
       }
     }
 
+    // Afficher la fiche du lieu
     function viewPlace(id) {
       const p = places.find(item => item.id === id);
       if (!p) return;
 
       const fullAddress = p.address || `${p.name}, ${p.city}`;
-      const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(p.name + ' ' + (p.city || ''))}`;
-      const googleAISearchUrl = `https://www.google.com/search?q=${encodeURIComponent('Renseignements avis détails ' + p.name + ' ' + fullAddress)}`;
+      
+      // Lien Google Maps pour Itinéraire Route
+      let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}`;
+      if (currentUserCoords) {
+        routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentUserCoords.lat},${currentUserCoords.lng}&destination=${encodeURIComponent(fullAddress)}`;
+      }
+
+      let categoryLabel = p.category;
+      if(p.category === 'hotel') categoryLabel = '🏨 Hôtel';
+      if(p.category === 'location') categoryLabel = '🏡 Location vacances';
+      if(p.category === 'restaurant') categoryLabel = '🍽️ Restaurant';
+      if(p.category === 'weinstube') categoryLabel = '🍷 Weinstube';
+      if(p.category === 'sortie') categoryLabel = '🎯 Sortie/Visite';
 
       let detailsHTML = '';
-      if (p.category === 'logement') {
+      if (p.category === 'hotel' || p.category === 'location') {
         if (p.details?.contact) detailsHTML += `<p>👤 <strong>Contact:</strong> ${p.details.contact} ${p.details.phone ? '(' + p.details.phone + ')' : ''}</p>`;
         if (p.details?.equipments) detailsHTML += `<p>🏡 <strong>Équipements:</strong> ${p.details.equipments}</p>`;
         if (p.details?.history) detailsHTML += `<p>📅 <strong>Dates/Prix:</strong> ${p.details.history}</p>`;
-      } else if (p.category === 'restaurant') {
-        if (p.details?.dishes) detailsHTML += `<p>🍲 <strong>Spécialités/Plats:</strong> ${p.details.dishes}</p>`;
-        if (p.details?.quality) detailsHTML += `<p>⭐ <strong>Ambiance/Avis:</strong> ${p.details.quality}</p>`;
+      } else if (p.category === 'restaurant' || p.category === 'weinstube') {
+        if (p.details?.dishes) detailsHTML += `<p>🍲 <strong>Spécialités:</strong> ${p.details.dishes}</p>`;
+        if (p.details?.quality) detailsHTML += `<p>⭐ <strong>Ambiance:</strong> ${p.details.quality}</p>`;
         if (p.details?.price) detailsHTML += `<p>💰 <strong>Prix moyen:</strong> ${p.details.price}</p>`;
       } else {
         if (p.details?.tips) detailsHTML += `<p>💡 <strong>Conseils:</strong> ${p.details.tips}</p>`;
@@ -457,19 +515,31 @@
       const modalContent = document.getElementById('view-modal-content');
       modalContent.innerHTML = `
         <div class="modal-header">
-          <span class="badge bg-${p.category}">${p.category}</span>
+          <div class="category-header-row">
+            <span class="badge bg-${p.category}">${categoryLabel}</span>
+            <button class="btn-see-map" onclick="zoomAndClose('${p.id}')">📍 Voir sur la carte</button>
+          </div>
           <button class="close-btn" onclick="closeModal()">&times;</button>
         </div>
 
         <div class="view-card-layout">
-          <div class="photo-container" onclick="document.getElementById('file-input-${p.id}').click()">
-            ${p.photo ? `<img src="${p.photo}" alt="Photo ${p.name}">` : `<span>📷<br>Ajouter une photo</span>`}
+          <!-- Gestion Photo (Ajouter, Modifier, Supprimer) -->
+          <div class="photo-container">
+            ${p.photo ? `
+              <img src="${p.photo}" alt="Photo ${p.name}">
+              <div class="photo-btn-overlay" onclick="document.getElementById('file-input-${p.id}').click()">Changer</div>
+            ` : `
+              <div style="cursor:pointer; padding:10px;" onclick="document.getElementById('file-input-${p.id}').click()">
+                📷<br><span style="font-size:0.75rem;">Ajouter photo</span>
+              </div>
+            `}
             <input type="file" id="file-input-${p.id}" accept="image/*" style="display:none;" onchange="uploadPhoto('${p.id}', event)">
           </div>
 
           <div class="view-info">
             <h2>${p.name}</h2>
             <p>📍 <strong>Adresse :</strong><br>${fullAddress}</p>
+            ${p.photo ? `<button onclick="removePhoto('${p.id}')" style="background:none; border:none; color:#ef4444; font-size:0.75rem; text-align:left; cursor:pointer; margin-top:4px;">🗑️ Supprimer la photo</button>` : ''}
           </div>
         </div>
 
@@ -478,8 +548,7 @@
 
         <div class="action-links">
           ${p.link ? `<a href="${p.link}" target="_blank" class="btn-link btn-web">🌐 Site Web</a>` : ''}
-          <a href="${googleSearchUrl}" target="_blank" class="btn-link btn-google">🔍 Recherche Google</a>
-          <a href="${googleAISearchUrl}" target="_blank" class="btn-link btn-ai">✨ Google IA Info</a>
+          <a href="${routeUrl}" target="_blank" class="btn-link btn-route">🚗 Route (Google Maps)</a>
         </div>
 
         <div class="card-footer-btns">
@@ -489,6 +558,14 @@
       `;
 
       document.getElementById('view-modal').classList.add('active');
+    }
+
+    function zoomAndClose(id) {
+      const p = places.find(item => item.id === id);
+      if (p && p.lat && p.lng) {
+        map.setView([p.lat, p.lng], 16);
+      }
+      closeModal();
     }
 
     function uploadPhoto(id, event) {
@@ -502,10 +579,21 @@
           await db.collection('places').doc(id).update({ photo: base64Photo });
           viewPlace(id);
         } catch (err) {
-          alert("Erreur lors de la sauvegarde de la photo : " + err.message);
+          alert("Erreur sauvegarde photo : " + err.message);
         }
       };
       reader.readAsDataURL(file);
+    }
+
+    async function removePhoto(id) {
+      if (confirm('Voulez-vous vraiment supprimer cette photo ?')) {
+        try {
+          await db.collection('places').doc(id).update({ photo: '' });
+          viewPlace(id);
+        } catch (err) {
+          alert("Erreur suppression photo : " + err.message);
+        }
+      }
     }
 
     function editPlace(id) {
@@ -530,12 +618,12 @@
       renderDynamicFields();
 
       if (p.details) {
-        if (p.category === 'logement') {
+        if (p.category === 'hotel' || p.category === 'location') {
           if(document.getElementById('field_contact')) document.getElementById('field_contact').value = p.details.contact || '';
           if(document.getElementById('field_phone')) document.getElementById('field_phone').value = p.details.phone || '';
           if(document.getElementById('field_equipments')) document.getElementById('field_equipments').value = p.details.equipments || '';
           if(document.getElementById('field_history')) document.getElementById('field_history').value = p.details.history || '';
-        } else if (p.category === 'restaurant') {
+        } else if (p.category === 'restaurant' || p.category === 'weinstube') {
           if(document.getElementById('field_dishes')) document.getElementById('field_dishes').value = p.details.dishes || '';
           if(document.getElementById('field_quality')) document.getElementById('field_quality').value = p.details.quality || '';
           if(document.getElementById('field_price')) document.getElementById('field_price').value = p.details.price || '';
@@ -571,7 +659,18 @@
       const listContainer = document.getElementById('places-list');
       listContainer.innerHTML = '';
 
-      const filtered = currentFilter === 'all' ? places : places.filter(p => p.category === currentFilter);
+      const searchQuery = (document.getElementById('search-input')?.value || '').toLowerCase();
+
+      const filtered = places.filter(p => {
+        const matchesCategory = currentFilter === 'all' || p.category === currentFilter;
+        const matchesSearch = !searchQuery || 
+          (p.name && p.name.toLowerCase().includes(searchQuery)) ||
+          (p.city && p.city.toLowerCase().includes(searchQuery)) ||
+          (p.address && p.address.toLowerCase().includes(searchQuery)) ||
+          (p.comments && p.comments.toLowerCase().includes(searchQuery));
+
+        return matchesCategory && matchesSearch;
+      });
 
       filtered.forEach(p => {
         if (p.lat && p.lng) {
@@ -590,10 +689,17 @@
           viewPlace(p.id);
         };
 
+        let badgeLabel = p.category;
+        if(p.category === 'hotel') badgeLabel = 'Hôtel';
+        if(p.category === 'location') badgeLabel = 'Location';
+        if(p.category === 'restaurant') badgeLabel = 'Resto';
+        if(p.category === 'weinstube') badgeLabel = 'Weinstube';
+        if(p.category === 'sortie') badgeLabel = 'Sortie';
+
         card.innerHTML = `
           <div class="card-header">
             <span class="card-title">${p.name}</span>
-            <span class="badge bg-${p.category}">${p.category}</span>
+            <span class="badge bg-${p.category}">${badgeLabel}</span>
           </div>
           <div style="font-size:0.8rem; color:#64748b;">📍 ${p.address || p.city || 'Adresse non renseignée'}</div>
           ${p.comments ? `<div style="font-size:0.85rem; color:#334155; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.comments}</div>` : ''}
