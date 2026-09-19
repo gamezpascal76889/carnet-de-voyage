@@ -27,7 +27,7 @@
     .btn-add { background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.85rem; }
     .btn-add:hover { background: #059669; }
 
-    /* Barre de recherche rapide dans le header */
+    /* Barre de recherche dépliable */
     #search-bar-container { display: none; width: 100%; background: #0f172a; padding: 8px 15px; }
     #search-bar-container.active { display: block; }
     #search-input { width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white; font-size: 0.9rem; }
@@ -92,6 +92,7 @@
     .btn-link { text-decoration: none; font-size: 0.8rem; font-weight: 600; padding: 8px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
     .btn-web { background: #e0e7ff; color: #3730a3; }
     .btn-route { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .phone-link { color: #2563eb; font-weight: 600; text-decoration: underline; }
 
     .comments-box { background: #f8fafc; border-left: 3px solid #2563eb; padding: 10px; border-radius: 4px; font-size: 0.85rem; color: #334155; margin-bottom: 15px; }
 
@@ -151,8 +152,8 @@
         <div>
           <label>Catégorie *</label>
           <select id="category" required onchange="renderDynamicFields()">
-            <option value="hotel">🏨 Logement - Hôtel</option>
-            <option value="location">🏡 Logement - Location vacances</option>
+            <option value="hotel">🏨 Hôtel</option>
+            <option value="location">🏡 Location vacances</option>
             <option value="restaurant">🍽️ Restaurant - Classique</option>
             <option value="weinstube">🍷 Restaurant - Weinstube</option>
             <option value="sortie">🎯 Sortie / Visite</option>
@@ -334,12 +335,14 @@
         `;
       } else if (cat === 'restaurant' || cat === 'weinstube') {
         container.innerHTML = `
+          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56"></div>
           <div><label>Type de cuisine / Spécialités</label><input type="text" id="field_dishes" placeholder="Ex: Plats alsaciens, Vins locaux, Flammekueche"></div>
           <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Chaleureux, typique, service rapide"></div>
           <div><label>Prix moyen payé</label><input type="text" id="field_price" placeholder="Ex: 30€ par personne"></div>
         `;
       } else if (cat === 'sortie') {
         container.innerHTML = `
+          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56"></div>
           <div><label>Conseils pour la prochaine fois</label><input type="text" id="field_tips" placeholder="Ex: Prévoir du liquide, réserver à l'avance"></div>
           <div><label>Prix / Tarifs d'accès</label><input type="text" id="field_price" placeholder="Ex: Gratuit, ou 12€/pers"></div>
         `;
@@ -370,7 +373,6 @@
         let data = await response.json();
 
         if (!data || data.length === 0) {
-          // Deuxième tentative avec juste ville et CP
           response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(postcode + ' ' + city + ' ' + country)}`);
           data = await response.json();
         }
@@ -379,7 +381,6 @@
           const addr = data[0].address;
           const returnedPostcode = addr.postcode || '';
           
-          // Vérification si le code postal correspond
           if (postcode && returnedPostcode && !returnedPostcode.startsWith(postcode.substring(0, 3))) {
             const confirmChoice = confirm(`⚠️ Attention : Le code postal "${postcode}" ne semble pas correspondre à la ville de "${city}" (détecté : ${returnedPostcode}).\n\nVoulez-vous quand même enregistrer ?`);
             if (!confirmChoice) return null;
@@ -426,6 +427,8 @@
         return;
       }
 
+      const phoneVal = document.getElementById('field_phone')?.value || '';
+
       const newPlace = {
         category,
         name,
@@ -439,27 +442,22 @@
         link: document.getElementById('link').value,
         comments: document.getElementById('comments').value,
         photo: document.getElementById('photo-base64').value || (id ? (places.find(p => p.id === id)?.photo || '') : ''),
-        details: {}
+        details: {
+          phone: phoneVal
+        }
       };
 
       if (category === 'hotel' || category === 'location') {
-        newPlace.details = {
-          contact: document.getElementById('field_contact')?.value || '',
-          phone: document.getElementById('field_phone')?.value || '',
-          equipments: document.getElementById('field_equipments')?.value || '',
-          history: document.getElementById('field_history')?.value || ''
-        };
+        newPlace.details.contact = document.getElementById('field_contact')?.value || '';
+        newPlace.details.equipments = document.getElementById('field_equipments')?.value || '';
+        newPlace.details.history = document.getElementById('field_history')?.value || '';
       } else if (category === 'restaurant' || category === 'weinstube') {
-        newPlace.details = {
-          dishes: document.getElementById('field_dishes')?.value || '',
-          quality: document.getElementById('field_quality')?.value || '',
-          price: document.getElementById('field_price')?.value || ''
-        };
+        newPlace.details.dishes = document.getElementById('field_dishes')?.value || '';
+        newPlace.details.quality = document.getElementById('field_quality')?.value || '';
+        newPlace.details.price = document.getElementById('field_price')?.value || '';
       } else {
-        newPlace.details = {
-          tips: document.getElementById('field_tips')?.value || '',
-          price: document.getElementById('field_price')?.value || ''
-        };
+        newPlace.details.tips = document.getElementById('field_tips')?.value || '';
+        newPlace.details.price = document.getElementById('field_price')?.value || '';
       }
 
       try {
@@ -499,17 +497,22 @@
       if(p.category === 'sortie') categoryLabel = '🎯 Sortie/Visite';
 
       let detailsHTML = '';
+      if (p.details?.phone) {
+        const cleanPhone = p.details.phone.replace(/\s+/g, '');
+        detailsHTML += `<p>📞 <strong>Téléphone :</strong> <a href="tel:${cleanPhone}" class="phone-link">${p.details.phone}</a></p>`;
+      }
+
       if (p.category === 'hotel' || p.category === 'location') {
-        if (p.details?.contact) detailsHTML += `<p>👤 <strong>Contact:</strong> ${p.details.contact} ${p.details.phone ? '(' + p.details.phone + ')' : ''}</p>`;
-        if (p.details?.equipments) detailsHTML += `<p>🏡 <strong>Équipements:</strong> ${p.details.equipments}</p>`;
-        if (p.details?.history) detailsHTML += `<p>📅 <strong>Dates/Prix:</strong> ${p.details.history}</p>`;
+        if (p.details?.contact) detailsHTML += `<p>👤 <strong>Contact :</strong> ${p.details.contact}</p>`;
+        if (p.details?.equipments) detailsHTML += `<p>🏡 <strong>Équipements :</strong> ${p.details.equipments}</p>`;
+        if (p.details?.history) detailsHTML += `<p>📅 <strong>Dates/Prix :</strong> ${p.details.history}</p>`;
       } else if (p.category === 'restaurant' || p.category === 'weinstube') {
-        if (p.details?.dishes) detailsHTML += `<p>🍲 <strong>Spécialités:</strong> ${p.details.dishes}</p>`;
-        if (p.details?.quality) detailsHTML += `<p>⭐ <strong>Ambiance:</strong> ${p.details.quality}</p>`;
-        if (p.details?.price) detailsHTML += `<p>💰 <strong>Prix moyen:</strong> ${p.details.price}</p>`;
+        if (p.details?.dishes) detailsHTML += `<p>🍲 <strong>Spécialités :</strong> ${p.details.dishes}</p>`;
+        if (p.details?.quality) detailsHTML += `<p>⭐ <strong>Ambiance :</strong> ${p.details.quality}</p>`;
+        if (p.details?.price) detailsHTML += `<p>💰 <strong>Prix moyen :</strong> ${p.details.price}</p>`;
       } else {
-        if (p.details?.tips) detailsHTML += `<p>💡 <strong>Conseils:</strong> ${p.details.tips}</p>`;
-        if (p.details?.price) detailsHTML += `<p>💰 <strong>Tarif:</strong> ${p.details.price}</p>`;
+        if (p.details?.tips) detailsHTML += `<p>💡 <strong>Conseils :</strong> ${p.details.tips}</p>`;
+        if (p.details?.price) detailsHTML += `<p>💰 <strong>Tarif :</strong> ${p.details.price}</p>`;
       }
 
       const modalContent = document.getElementById('view-modal-content');
@@ -618,9 +621,10 @@
       renderDynamicFields();
 
       if (p.details) {
+        if(document.getElementById('field_phone')) document.getElementById('field_phone').value = p.details.phone || '';
+        
         if (p.category === 'hotel' || p.category === 'location') {
           if(document.getElementById('field_contact')) document.getElementById('field_contact').value = p.details.contact || '';
-          if(document.getElementById('field_phone')) document.getElementById('field_phone').value = p.details.phone || '';
           if(document.getElementById('field_equipments')) document.getElementById('field_equipments').value = p.details.equipments || '';
           if(document.getElementById('field_history')) document.getElementById('field_history').value = p.details.history || '';
         } else if (p.category === 'restaurant' || p.category === 'weinstube') {
