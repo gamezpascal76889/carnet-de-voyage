@@ -60,7 +60,6 @@
     /* Badges Couleurs */
     .bg-sejour { background-color: #0284c7; }
     .bg-hotel { background-color: #8b5cf6; }
-    .bg-location { background-color: #a855f7; }
     .bg-restaurant { background-color: #f59e0b; }
     .bg-weinstube { background-color: #d97706; }
     .bg-sortie { background-color: #ec4899; }
@@ -112,7 +111,7 @@
     /* Adaptation Mobile Optimisée */
     @media (max-width: 768px) {
       #container { flex-direction: column; }
-      #map { height: 30vh; flex: none; } /* Hauteur de carte ajustée à 30vh pour dégager la barre d'onglets */
+      #map { height: 30vh; flex: none; }
       #sidebar { width: 100%; flex: 1; }
       .btn-locate { top: 60px; }
     }
@@ -142,7 +141,6 @@
         <button class="filter-chip active" onclick="filterPlaces('all')">Tous</button>
         <button class="filter-chip" onclick="filterPlaces('sejour')">🏖️ Séjours</button>
         <button class="filter-chip" onclick="filterPlaces('hotel')">🏨 Hôtels</button>
-        <button class="filter-chip" onclick="filterPlaces('location')">🏡 Locations</button>
         <button class="filter-chip" onclick="filterPlaces('restaurant')">🍽️ Restos</button>
         <button class="filter-chip" onclick="filterPlaces('weinstube')">🍷 Weinstube</button>
         <button class="filter-chip" onclick="filterPlaces('sortie')">🎯 Sorties</button>
@@ -167,7 +165,6 @@
           <select id="category" required onchange="renderDynamicFields()">
             <option value="sejour">🏖️ Vacances / Séjours</option>
             <option value="hotel">🏨 Hôtel</option>
-            <option value="location">🏡 Location vacances</option>
             <option value="restaurant">🍽️ Restaurant - Classique</option>
             <option value="weinstube">🍷 Restaurant - Weinstube</option>
             <option value="sortie">🎯 Sortie / Visite</option>
@@ -383,7 +380,7 @@
             </div>
           </div>
         `;
-      } else if (cat === 'hotel' || cat === 'location') {
+      } else if (cat === 'hotel') {
         container.innerHTML = `
           <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 06 12 34 56 78"></div>
           <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Réception"></div>
@@ -504,7 +501,7 @@
           price_flight: document.getElementById('field_price_flight')?.value || '',
           price_global: document.getElementById('field_price_global')?.value || ''
         };
-      } else if (category === 'hotel' || category === 'location') {
+      } else if (category === 'hotel') {
         newPlace.details = {
           phone: document.getElementById('field_phone')?.value || '',
           contact: document.getElementById('field_contact')?.value || '',
@@ -556,7 +553,6 @@
       let categoryLabel = 'Lieu';
       if(p.category === 'sejour') categoryLabel = '🏖️ Séjour / Vacances';
       if(p.category === 'hotel') categoryLabel = '🏨 Hôtel';
-      if(p.category === 'location') categoryLabel = '🏡 Location';
       if(p.category === 'restaurant') categoryLabel = '🍽️ Restaurant';
       if(p.category === 'weinstube') categoryLabel = '🍷 Weinstube';
       if(p.category === 'sortie') categoryLabel = '🎯 Sortie/Visite';
@@ -588,7 +584,7 @@
           if (p.details?.price_acc) detailsHTML += `<p>🏨 <strong>Prix hébergement :</strong> ${p.details.price_acc}</p>`;
           if (p.details?.price_flight) detailsHTML += `<p>✈️ <strong>Prix vol :</strong> ${p.details.price_flight}</p>`;
         }
-      } else if (p.category === 'hotel' || p.category === 'location') {
+      } else if (p.category === 'hotel') {
         if (p.details?.contact) detailsHTML += `<p>👤 <strong>Contact :</strong> ${p.details.contact}</p>`;
         if (p.details?.equipments) detailsHTML += `<p>🏡 <strong>Équipements :</strong> ${p.details.equipments}</p>`;
         if (p.details?.price) detailsHTML += `<p>💰 <strong>Prix :</strong> ${p.details.price}</p>`;
@@ -780,7 +776,6 @@
         let badgeLabel = 'Lieu';
         if(p.category === 'sejour') badgeLabel = 'Séjour';
         if(p.category === 'hotel') badgeLabel = 'Hôtel';
-        if(p.category === 'location') badgeLabel = 'Location';
         if(p.category === 'restaurant') badgeLabel = 'Resto';
         if(p.category === 'weinstube') badgeLabel = 'Weinstube';
         if(p.category === 'sortie') badgeLabel = 'Sortie';
