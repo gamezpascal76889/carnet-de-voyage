@@ -276,6 +276,10 @@
       closeModal();
       document.getElementById('search-bar-container').classList.remove('active');
       document.getElementById('search-input').value = '';
+      currentFilter = 'all';
+      document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+      const allBtn = document.querySelector('.filter-chip');
+      if (allBtn) allBtn.classList.add('active');
       map.setView([46.603354, 1.888334], 6);
       render();
     }
@@ -646,10 +650,10 @@
 
     function zoomAndClose(id) {
       const p = places.find(item => item.id === id);
-      if (p && p.lat && p.lng) {
-        map.setView([p.lat, p.lng], 16);
-      }
       closeModal();
+      if (p && p.lat && p.lng) {
+        map.setView([p.lat, p.lng], 15);
+      }
     }
 
     function uploadPhoto(id, event) {
@@ -734,7 +738,9 @@
     function filterPlaces(cat) {
       currentFilter = cat;
       document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
       render();
     }
 
