@@ -43,7 +43,7 @@
     /* Panel latéral */
     #sidebar { width: 380px; background: white; border-left: 1px solid #e2e8f0; overflow-y: auto; padding: 0; display: flex; flex-direction: column; z-index: 2; box-shadow: -2px 0 10px rgba(0,0,0,0.05); }
     
-    /* Barre de filtres agrandie en hauteur */
+    /* Barre de filtres */
     .filters { position: sticky; top: 0; background: white; z-index: 10; padding: 14px 15px; display: flex; align-items: center; gap: 8px; overflow-x: auto; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04); min-height: 56px; }
     .filter-chip { padding: 8px 16px; border-radius: 20px; background: #e2e8f0; border: none; font-size: 0.9rem; cursor: pointer; white-space: nowrap; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 4px; }
     .filter-chip.active { background: #2563eb; color: white; }
@@ -108,7 +108,7 @@
     .btn-edit { background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
     .btn-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
 
-    /* Adaptation Mobile Optimisée */
+    /* Adaptation Mobile */
     @media (max-width: 768px) {
       #container { flex-direction: column; }
       #map { height: 30vh; flex: none; }
@@ -130,7 +130,7 @@
 
   <!-- Barre de recherche -->
   <div id="search-bar-container">
-    <input type="search" id="search-input" placeholder="Rechercher (nom, ville, mot-clé, accompagnants, etc.)..." oninput="render()">
+    <input type="search" id="search-input" placeholder="Rechercher (nom, ville, mois, année, mot-clé, accompagnants, etc.)..." oninput="render()">
   </div>
 
   <div id="container">
@@ -749,8 +749,23 @@
 
       const filtered = places.filter(p => {
         const matchesCategory = currentFilter === 'all' || p.category === currentFilter;
+        
+        // Extraction et formatage des dates (mois en français + année) pour la recherche
+        let datesFormatted = '';
+        [p.date_start, p.date_end].forEach(dStr => {
+          if (dStr) {
+            const dateObj = new Date(dStr);
+            if (!isNaN(dateObj)) {
+              const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'long' }); // ex: "juillet"
+              const year = dateObj.getFullYear(); // ex: "2024"
+              datesFormatted += ` ${monthName} ${year} ${dStr}`;
+            }
+          }
+        });
+
         const detailsString = p.details ? Object.values(p.details).join(' ') : '';
-        const searchableContent = `${p.name || ''} ${p.city || ''} ${p.address || ''} ${p.comments || ''} ${p.with_who || ''} ${p.category || ''} ${detailsString}`.toLowerCase();
+        const searchableContent = `${p.name || ''} ${p.city || ''} ${p.address || ''} ${p.comments || ''} ${p.with_who || ''} ${p.category || ''} ${detailsString} ${datesFormatted}`.toLowerCase();
+        
         const matchesSearch = !searchQuery || searchQuery.split(' ').every(q => searchableContent.includes(q));
 
         return matchesCategory && matchesSearch;
