@@ -111,7 +111,7 @@
     /* Adaptation Mobile */
     @media (max-width: 768px) {
       #container { flex-direction: column; }
-      #map { height: 30vh; flex: none; }
+      #map { height: 35vh; flex: none; }
       #sidebar { width: 100%; flex: 1; }
       .btn-locate { top: 60px; }
     }
@@ -130,7 +130,7 @@
 
   <!-- Barre de recherche -->
   <div id="search-bar-container">
-    <input type="search" id="search-input" placeholder="Rechercher (nom, ville, mois, année, mot-clé, accompagnants, etc.)..." oninput="render()">
+    <input type="search" id="search-input" placeholder="Rechercher (nom, ville, mois, année, mot-clé, etc.)..." oninput="render()" autocomplete="off">
   </div>
 
   <div id="container">
@@ -138,12 +138,12 @@
     <button class="btn-locate" onclick="centerOnUserLocation()" title="Me localiser">🎯</button>
     <div id="sidebar">
       <div class="filters">
-        <button class="filter-chip active" onclick="filterPlaces('all')">Tous</button>
-        <button class="filter-chip" onclick="filterPlaces('sejour')">🏖️ Séjours</button>
-        <button class="filter-chip" onclick="filterPlaces('hotel')">🏨 Hôtels</button>
-        <button class="filter-chip" onclick="filterPlaces('restaurant')">🍽️ Restos</button>
-        <button class="filter-chip" onclick="filterPlaces('weinstube')">🍷 Weinstube</button>
-        <button class="filter-chip" onclick="filterPlaces('sortie')">🎯 Sorties</button>
+        <button class="filter-chip active" onclick="filterPlaces('all', event)">Tous</button>
+        <button class="filter-chip" onclick="filterPlaces('sejour', event)">🏖️ Séjours</button>
+        <button class="filter-chip" onclick="filterPlaces('hotel', event)">🏨 Hôtels</button>
+        <button class="filter-chip" onclick="filterPlaces('restaurant', event)">🍽️ Restos</button>
+        <button class="filter-chip" onclick="filterPlaces('weinstube', event)">🍷 Weinstube</button>
+        <button class="filter-chip" onclick="filterPlaces('sortie', event)">🎯 Sorties</button>
       </div>
       <div id="places-list"></div>
     </div>
@@ -156,7 +156,8 @@
         <h2 id="modal-title">Ajouter un nouvel endroit</h2>
         <button class="close-btn" onclick="closeModal()">&times;</button>
       </div>
-      <form id="place-form" autocomplete="off" onsubmit="savePlace(event)">
+      <!-- Désactivation explicite du préremplissage et enregistrement auto des adresses -->
+      <form id="place-form" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onsubmit="savePlace(event)">
         <input type="hidden" id="place-id">
         <input type="hidden" id="photo-base64">
         
@@ -173,7 +174,7 @@
 
         <div>
           <label>Nom de l'établissement / Titre du séjour *</label>
-          <input type="text" id="name" required placeholder="Ex: Séjour à la Mer, Hôtel du Centre...">
+          <input type="text" id="name" required placeholder="Ex: Séjour à la Mer, Hôtel du Centre..." autocomplete="off">
         </div>
 
         <div class="form-row">
@@ -189,33 +190,33 @@
 
         <div>
           <label>Avec qui (Accompagnants / Partagé avec)</label>
-          <input type="text" id="with_who" placeholder="Ex: Marie, Thomas, Paul...">
+          <input type="text" id="with_who" placeholder="Ex: Marie, Thomas, Paul..." autocomplete="off">
         </div>
 
         <div>
           <label>Rue et Numéro</label>
-          <input type="text" id="street" autocomplete="new-password" placeholder="Ex: 12 Rue des Fleurs">
+          <input type="text" id="street" placeholder="Ex: 12 Rue des Fleurs" autocomplete="new-password">
         </div>
 
         <div class="form-row">
           <div>
             <label>Code Postal *</label>
-            <input type="text" id="postcode" required autocomplete="new-password" placeholder="Ex: 67000">
+            <input type="text" id="postcode" required placeholder="Ex: 67000" autocomplete="new-password">
           </div>
           <div>
             <label>Ville *</label>
-            <input type="text" id="city" required autocomplete="new-password" placeholder="Ex: Strasbourg">
+            <input type="text" id="city" required placeholder="Ex: Strasbourg" autocomplete="new-password">
           </div>
         </div>
 
         <div>
           <label>Pays</label>
-          <input type="text" id="country" value="France" autocomplete="new-password" placeholder="Ex: France">
+          <input type="text" id="country" value="France" placeholder="Ex: France" autocomplete="new-password">
         </div>
 
         <div>
           <label>Lien du site internet officiel / Réservation</label>
-          <input type="url" id="link" placeholder="https://www.exemple.com">
+          <input type="url" id="link" placeholder="https://www.exemple.com" autocomplete="off">
         </div>
 
         <div>
@@ -272,14 +273,18 @@
       if (e.key === 'Enter') this.blur();
     });
 
-    function goHome() {
-      closeModal();
-      document.getElementById('search-bar-container').classList.remove('active');
-      document.getElementById('search-input').value = '';
+    function resetFiltersToAll() {
       currentFilter = 'all';
       document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
       const allBtn = document.querySelector('.filter-chip');
       if (allBtn) allBtn.classList.add('active');
+    }
+
+    function goHome() {
+      closeModal();
+      document.getElementById('search-bar-container').classList.remove('active');
+      document.getElementById('search-input').value = '';
+      resetFiltersToAll();
       map.setView([46.603354, 1.888334], 6);
       render();
     }
@@ -296,6 +301,10 @@
     }
 
     function centerOnUserLocation() {
+      // Réinitialise le filtre sur "Tous" pour garantir l'affichage de TOUS les points autour de la position GPS
+      resetFiltersToAll();
+      render();
+
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -357,9 +366,9 @@
 
       if (cat === 'sejour') {
         container.innerHTML = `
-          <div><label>Plateforme de réservation</label><input type="text" id="field_booking_platform" placeholder="Ex: Airbnb, Booking..."></div>
-          <div><label>Motif du séjour</label><input type="text" id="field_reason" placeholder="Ex: Vacances, Anniversaire..."></div>
-          <div><label>Compagnie aérienne (si vol)</label><input type="text" id="field_airline" placeholder="Ex: Air France..."></div>
+          <div><label>Plateforme de réservation</label><input type="text" id="field_booking_platform" placeholder="Ex: Airbnb, Booking..." autocomplete="off"></div>
+          <div><label>Motif du séjour</label><input type="text" id="field_reason" placeholder="Ex: Vacances, Anniversaire..." autocomplete="off"></div>
+          <div><label>Compagnie aérienne (si vol)</label><input type="text" id="field_airline" placeholder="Ex: Air France..." autocomplete="off"></div>
           
           <div class="price-type-box">
             <label>Mode de facturation / Tarification</label>
@@ -372,37 +381,37 @@
 
             <div id="price_acc_container" style="margin-top:8px;">
               <label>Prix d'hébergement (€)</label>
-              <input type="text" id="field_price_acc" placeholder="Ex: 850€">
+              <input type="text" id="field_price_acc" placeholder="Ex: 850€" autocomplete="off">
             </div>
             <div id="price_flight_container" style="margin-top:8px;">
               <label>Prix du vol (€)</label>
-              <input type="text" id="field_price_flight" placeholder="Ex: 320€">
+              <input type="text" id="field_price_flight" placeholder="Ex: 320€" autocomplete="off">
             </div>
             <div id="price_global_container" style="margin-top:8px; display:none;">
               <label>Prix forfaitaire global (€)</label>
-              <input type="text" id="field_price_global" placeholder="Ex: 1200€">
+              <input type="text" id="field_price_global" placeholder="Ex: 1200€" autocomplete="off">
             </div>
           </div>
         `;
       } else if (cat === 'hotel') {
         container.innerHTML = `
-          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 06 12 34 56 78"></div>
-          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Réception"></div>
-          <div><label>Équipements / Détails</label><input type="text" id="field_equipments" placeholder="Ex: Piscine, Wifi"></div>
-          <div><label>Prix payé (€)</label><input type="text" id="field_price" placeholder="Ex: 120€ / nuit"></div>
+          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 06 12 34 56 78" autocomplete="off"></div>
+          <div><label>Nom de l'hôte / Contact</label><input type="text" id="field_contact" placeholder="Ex: Réception" autocomplete="off"></div>
+          <div><label>Équipements / Détails</label><input type="text" id="field_equipments" placeholder="Ex: Piscine, Wifi" autocomplete="off"></div>
+          <div><label>Prix payé (€)</label><input type="text" id="field_price" placeholder="Ex: 120€ / nuit" autocomplete="off"></div>
         `;
       } else if (cat === 'restaurant' || cat === 'weinstube') {
         container.innerHTML = `
-          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56"></div>
-          <div><label>Type de cuisine / Spécialités</label><input type="text" id="field_dishes" placeholder="Ex: Flammekueche"></div>
-          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Chaleureux"></div>
-          <div><label>Prix moyen payé (€)</label><input type="text" id="field_price" placeholder="Ex: 35€ / pers"></div>
+          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56" autocomplete="off"></div>
+          <div><label>Type de cuisine / Spécialités</label><input type="text" id="field_dishes" placeholder="Ex: Flammekueche" autocomplete="off"></div>
+          <div><label>Qualité / Ambiance</label><input type="text" id="field_quality" placeholder="Ex: Chaleureux" autocomplete="off"></div>
+          <div><label>Prix moyen payé (€)</label><input type="text" id="field_price" placeholder="Ex: 35€ / pers" autocomplete="off"></div>
         `;
       } else if (cat === 'sortie') {
         container.innerHTML = `
-          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56"></div>
-          <div><label>Conseils pour la prochaine fois</label><input type="text" id="field_tips" placeholder="Ex: Réserver à l'avance"></div>
-          <div><label>Prix / Tarif d'accès (€)</label><input type="text" id="field_price" placeholder="Ex: 15€ / pers"></div>
+          <div><label>Téléphone</label><input type="tel" id="field_phone" placeholder="Ex: 03 88 12 34 56" autocomplete="off"></div>
+          <div><label>Conseils pour la prochaine fois</label><input type="text" id="field_tips" placeholder="Ex: Réserver à l'avance" autocomplete="off"></div>
+          <div><label>Prix / Tarif d'accès (€)</label><input type="text" id="field_price" placeholder="Ex: 15€ / pers" autocomplete="off"></div>
         `;
       }
     }
@@ -651,6 +660,8 @@
     function zoomAndClose(id) {
       const p = places.find(item => item.id === id);
       closeModal();
+      resetFiltersToAll();
+      render();
       if (p && p.lat && p.lng) {
         map.setView([p.lat, p.lng], 15);
       }
@@ -735,7 +746,7 @@
       }
     }
 
-    function filterPlaces(cat) {
+    function filterPlaces(cat, event) {
       currentFilter = cat;
       document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
       if (event && event.target) {
