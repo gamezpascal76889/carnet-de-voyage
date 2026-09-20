@@ -156,7 +156,7 @@
         <h2 id="modal-title">Ajouter un nouvel endroit</h2>
         <button class="close-btn" onclick="closeModal()">&times;</button>
       </div>
-      <form id="place-form" onsubmit="savePlace(event)">
+      <form id="place-form" autocomplete="off" onsubmit="savePlace(event)">
         <input type="hidden" id="place-id">
         <input type="hidden" id="photo-base64">
         
@@ -194,23 +194,23 @@
 
         <div>
           <label>Rue et Numéro</label>
-          <input type="text" id="street" placeholder="Ex: 12 Rue des Fleurs">
+          <input type="text" id="street" autocomplete="new-password" placeholder="Ex: 12 Rue des Fleurs">
         </div>
 
         <div class="form-row">
           <div>
             <label>Code Postal *</label>
-            <input type="text" id="postcode" required placeholder="Ex: 67000">
+            <input type="text" id="postcode" required autocomplete="new-password" placeholder="Ex: 67000">
           </div>
           <div>
             <label>Ville *</label>
-            <input type="text" id="city" required placeholder="Ex: Strasbourg">
+            <input type="text" id="city" required autocomplete="new-password" placeholder="Ex: Strasbourg">
           </div>
         </div>
 
         <div>
           <label>Pays</label>
-          <input type="text" id="country" value="France" placeholder="Ex: France">
+          <input type="text" id="country" value="France" autocomplete="new-password" placeholder="Ex: France">
         </div>
 
         <div>
@@ -750,14 +750,13 @@
       const filtered = places.filter(p => {
         const matchesCategory = currentFilter === 'all' || p.category === currentFilter;
         
-        // Extraction et formatage des dates (mois en français + année) pour la recherche
         let datesFormatted = '';
         [p.date_start, p.date_end].forEach(dStr => {
           if (dStr) {
             const dateObj = new Date(dStr);
             if (!isNaN(dateObj)) {
-              const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'long' }); // ex: "juillet"
-              const year = dateObj.getFullYear(); // ex: "2024"
+              const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'long' });
+              const year = dateObj.getFullYear();
               datesFormatted += ` ${monthName} ${year} ${dStr}`;
             }
           }
