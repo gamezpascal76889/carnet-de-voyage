@@ -34,36 +34,39 @@
     #search-input::placeholder { color: #94a3b8; }
 
     #container { display: flex; flex: 1; position: relative; overflow: hidden; }
-    #map { flex: 1; height: 100%; z-index: 1; }
     
-    /* Bouton ma position GPS sur la carte (en haut à gauche) */
-    .btn-locate { position: absolute; top: 80px; left: 10px; z-index: 1000; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; width: 34px; height: 34px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+    /* Wrapper de la carte pour garantir un positionnement relatif des boutons internes */
+    .map-wrapper { position: relative; flex: 1; height: 100%; display: flex; flex-direction: column; }
+    #map { width: 100%; height: 100%; z-index: 1; }
+    
+    /* Bouton ma position GPS sur la carte */
+    .btn-locate { position: absolute; top: 60px; left: 10px; z-index: 1000; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; width: 34px; height: 34px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .btn-locate:hover { background: #f4f4f4; }
 
-    /* Bouton Plein Écran Carte (en haut à droite) */
+    /* Bouton Plein Écran Carte (ancré strictement sur la carte) */
     .btn-fullscreen { position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; padding: 0 10px; height: 34px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); color: #0f172a; gap: 4px; }
     .btn-fullscreen:hover { background: #f4f4f4; }
 
     /* Mode Plein Écran Carte sur Smartphone/Tablette */
     #container.map-fullscreen #sidebar { display: none !important; }
-    #container.map-fullscreen #map { height: 100% !important; flex: 1 !important; }
+    #container.map-fullscreen .map-wrapper { height: 100% !important; flex: 1 !important; }
 
     /* Panel latéral */
     #sidebar { width: 380px; background: white; border-left: 1px solid #e2e8f0; overflow-y: auto; padding: 0; display: flex; flex-direction: column; z-index: 2; box-shadow: -2px 0 10px rgba(0,0,0,0.05); }
     
     /* Barre de filtres */
-    .filters { position: sticky; top: 0; background: white; z-index: 10; padding: 14px 15px; display: flex; align-items: center; gap: 8px; overflow-x: auto; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04); min-height: 56px; }
-    .filter-chip { padding: 8px 16px; border-radius: 20px; background: #e2e8f0; border: none; font-size: 0.9rem; cursor: pointer; white-space: nowrap; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 4px; }
+    .filters { position: sticky; top: 0; background: white; z-index: 10; padding: 10px 15px; display: flex; align-items: center; gap: 8px; overflow-x: auto; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04); min-height: 48px; }
+    .filter-chip { padding: 6px 14px; border-radius: 20px; background: #e2e8f0; border: none; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 4px; }
     .filter-chip.active { background: #2563eb; color: white; }
 
     /* Liste des fiches */
-    #places-list { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+    #places-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
-    .place-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; display: flex; flex-direction: column; gap: 6px; }
+    .place-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; display: flex; flex-direction: column; gap: 4px; }
     .place-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .card-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-    .card-title { font-weight: 600; font-size: 0.95rem; color: #0f172a; }
-    .badge { font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; color: white; font-weight: 600; white-space: nowrap; }
+    .card-title { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
+    .badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 12px; color: white; font-weight: 600; white-space: nowrap; }
 
     /* Badges Couleurs */
     .bg-sejour { background-color: #0284c7; }
@@ -117,12 +120,12 @@
     .btn-duplicate { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
     .btn-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
 
-    /* Adaptation Mobile */
+    /* Adaptation Mobile : Carte ajustée pour afficher ~3 fiches tout en gardant le scroll */
     @media (max-width: 768px) {
       #container { flex-direction: column; }
-      #map { height: 35vh; flex: none; }
-      #sidebar { width: 100%; flex: 1; }
-      .btn-locate { top: 60px; }
+      .map-wrapper { height: 250px; flex: none; }
+      #sidebar { width: 100%; flex: 1; overflow-y: auto; }
+      .btn-locate { top: 50px; left: 10px; }
       .btn-fullscreen { top: 10px; right: 10px; }
     }
   </style>
@@ -144,9 +147,12 @@
   </div>
 
   <div id="container">
-    <div id="map"></div>
-    <button class="btn-locate" onclick="centerOnUserLocation()" title="Me localiser">🎯</button>
-    <button class="btn-fullscreen" id="btn-fullscreen" onclick="toggleFullscreenMap()" title="Agrandir la carte">⛶ Plein écran</button>
+    <div class="map-wrapper">
+      <div id="map"></div>
+      <button class="btn-locate" onclick="centerOnUserLocation()" title="Me localiser">🎯</button>
+      <button class="btn-fullscreen" id="btn-fullscreen" onclick="toggleFullscreenMap()" title="Agrandir la carte">⛶ Plein écran</button>
+    </div>
+    
     <div id="sidebar">
       <div class="filters">
         <button class="filter-chip active" onclick="filterPlaces('all', event)">Tous</button>
@@ -571,7 +577,6 @@
         if (id) {
           await db.collection('places').doc(id).set(newPlace, { merge: true });
         } else {
-          // Ajout de l'horodatage pour trier par date de création
           newPlace.createdAt = firebase.firestore.FieldValue.serverTimestamp();
           await db.collection('places').add(newPlace);
         }
