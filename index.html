@@ -36,12 +36,12 @@
     #container { display: flex; flex: 1; position: relative; overflow: hidden; }
     #map { flex: 1; height: 100%; z-index: 1; }
     
-    /* Bouton ma position GPS sur la carte */
+    /* Bouton ma position GPS sur la carte (en haut à gauche) */
     .btn-locate { position: absolute; top: 80px; left: 10px; z-index: 1000; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; width: 34px; height: 34px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .btn-locate:hover { background: #f4f4f4; }
 
-    /* Bouton Plein Écran Carte */
-    .btn-fullscreen { position: absolute; top: 124px; left: 10px; z-index: 1000; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; padding: 0 8px; height: 34px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); color: #0f172a; gap: 4px; }
+    /* Bouton Plein Écran Carte (en haut à droite) */
+    .btn-fullscreen { position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; padding: 0 10px; height: 34px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); color: #0f172a; gap: 4px; }
     .btn-fullscreen:hover { background: #f4f4f4; }
 
     /* Mode Plein Écran Carte sur Smartphone/Tablette */
@@ -123,7 +123,7 @@
       #map { height: 35vh; flex: none; }
       #sidebar { width: 100%; flex: 1; }
       .btn-locate { top: 60px; }
-      .btn-fullscreen { top: 102px; }
+      .btn-fullscreen { top: 10px; right: 10px; }
     }
   </style>
 </head>
@@ -318,9 +318,7 @@
       document.getElementById('search-bar-container').classList.remove('active');
       document.getElementById('search-input').value = '';
       if (isMapFullscreen) toggleFullscreenMap();
-      resetFiltersToAll();
-      map.setView([46.603354, 1.888334], 6);
-      render();
+      centerOnUserLocation();
     }
 
     function toggleSearchBar() {
